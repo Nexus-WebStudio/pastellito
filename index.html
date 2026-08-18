@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Família Pastellito | Cardápio Digital</title>
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              dark: '#0c0a09', // stone-950
+              card: '#1c1917', // stone-900
+              yellow: '#eab308', // yellow-500
+              red: '#ef4444', // red-500
+              border: '#292524' // stone-800
+            }
+          },
+          fontFamily: {
+            sans: ['Nunito', 'sans-serif'],
+            western: ['Rye', 'cursive']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&family=Rye&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      font-family: 'Nunito', sans-serif;
+      background-color: #0c0a09;
+      color: #f5f5f4;
+      background-image: radial-gradient(#292524 1px, transparent 1px);
+      background-size: 24px 24px;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .font-western { font-family: 'Rye', cursive; }
+    
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #eab308; border-radius: 10px; }
+    .hide-scrollbar::-webkit-scrollbar { display: none; }
+    .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    /* Custom Checkbox for Ingredients */
+    .ing-checkbox:checked + div {
+      background-color: #eab308;
+      color: #000;
+      border-color: #eab308;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body class="min-h-screen pb-32">
+
+  <!-- TOAST -->
+  <div id="toast" class="fixed top-4 right-4 z-[60] transform translate-y-[-150%] opacity-0 transition-all duration-300 pointer-events-none flex items-center gap-3 bg-brand-yellow text-black px-5 py-3 rounded-xl shadow-[0_0_20px_rgba(234,179,8,0.4)] font-black border-2 border-yellow-400">
+    <span>🤠</span>
+    <span id="toast-message">Eita glória, adicionado!</span>
+  </div>
+
+  <!-- HEADER RÚSTICO -->
+  <header class="sticky top-0 z-30 bg-brand-dark/95 backdrop-blur-md border-b-2 border-brand-yellow/30 shadow-xl">
+    <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-full bg-brand-yellow flex items-center justify-center text-2xl shadow-[0_0_15px_rgba(234,179,8,0.5)]">
+          🥟
+        </div>
+        <div>
+          <h1 class="font-western text-xl md:text-2xl text-brand-yellow tracking-wide">Família Pastellito</h1>
+          <p class="text-[10px] md:text-xs text-zinc-400 font-bold uppercase tracking-widest">Sabor do jeitinho da sua fome</p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO SECTION -->
+  <section class="max-w-4xl mx-auto px-4 pt-6 pb-4">
+    <div class="bg-brand-card border border-brand-border rounded-2xl p-5 relative overflow-hidden shadow-2xl">
+      <!-- Decor -->
+      <div class="absolute -right-6 -bottom-6 text-8xl opacity-10 rotate-12 pointer-events-none">🌵</div>
+      
+      <div class="relative z-10 text-center space-y-3">
+        <span class="inline-block bg-brand-red text-white text-xs font-black px-3 py-1 rounded-full uppercase tracking-widest animate-pulse">
+          🔥 Chapa Quente
+        </span>
+        <h2 class="text-3xl md:text-4xl font-western text-white">
+          Bateu a fome <span class="text-brand-yellow">de Peão?</span>
+        </h2>
+        <p class="text-sm text-zinc-400 max-w-lg mx-auto font-medium">
+          Escolha seu lanche, monte seu pastel ou pede aquele combo bruto. A gente entrega rapidinho na sua porta!
+        </p>
+      </div>
+
+      <!-- BUSCA -->
+      <div class="mt-6 max-w-sm mx-auto relative">
+        <input 
+          type="text" 
+          id="search-input" 
+          placeholder="Busque por pastel, x-bacon, coca..." 
+          oninput="filterProducts()"
+          class="w-full bg-brand-dark border border-brand-border rounded-xl px-4 py-3 pl-11 text-sm text-white focus:outline-none focus:border-brand-yellow transition-colors"
+        >
+        <svg class="w-5 h-5 text-zinc-500 absolute left-3.5 top-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABAS DE CATEGORIA -->
+  <nav class="sticky top-[74px] md:top-[76px] z-20 bg-brand-dark/95 backdrop-blur-md border-b border-brand-border py-3 shadow-lg">
+    <div class="max-w-4xl mx-auto px-4">
+      <div class="flex items-center gap-2 overflow-x-auto hide-scrollbar py-1" id="category-tabs">
+        <button onclick="selectCategory('pasteis')" id="tab-pasteis" class="category-btn active border px-4 py-2 rounded-xl text-sm font-black whitespace-nowrap transition-all bg-brand-yellow border-brand-yellow text-black shadow-[0_0_10px_rgba(234,179,8,0.3)]">
+          🥟 Pastéis
+        </button>
+        <button onclick="selectCategory('lanches')" id="tab-lanches" class="category-btn border border-brand-border bg-brand-card hover:bg-brand-border text-zinc-300 px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-all">
+          🍔 Lanches Brutos
+        </button>
+        <button onclick="selectCategory('hotdogs')" id="tab-hotdogs" class="category-btn border border-brand-border bg-brand-card hover:bg-brand-border text-zinc-300 px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-all">
+          🌭 Hot Dogs
+        </button>
+        <button onclick="selectCategory('bebidas')" id="tab-bebidas" class="category-btn border border-brand-border bg-brand-card hover:bg-brand-border text-zinc-300 px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap transition-all">
+          🥤 Bebidas & Sucos
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- CONTEÚDO PRINCIPAL -->
+  <main class="max-w-4xl mx-auto px-4 py-8">
+    <div id="catalog-container" class="space-y-12">
+      <!-- Injetado dinamicamente via JS -->
+    </div>
+  </main>
+
+  <!-- BARRA FLUTUANTE DO CARRINHO -->
+  <div id="cart-floating-bar" class="fixed bottom-4 left-4 right-4 max-w-lg mx-auto z-40 transition-all duration-300 transform translate-y-32 opacity-0">
+    <div class="bg-brand-yellow border-2 border-yellow-400 rounded-2xl p-3 shadow-[0_10px_25px_rgba(234,179,8,0.3)] flex items-center justify-between text-black cursor-pointer active:scale-95 transition-transform" onclick="openCartModal()">
+      <div class="flex items-center gap-3">
+        <div class="relative bg-black/10 w-12 h-12 rounded-xl flex items-center justify-center font-bold text-2xl">
+          🛍️
+          <span id="cart-count-badge" class="absolute -top-2 -right-2 bg-brand-red text-white text-xs font-black w-6 h-6 rounded-full flex items-center justify-center shadow-lg border-2 border-brand-yellow">
+            0
+          </span>
+        </div>
+        <div>
+          <span class="text-xs font-black uppercase tracking-wider block opacity-80">Total do Carrinho</span>
+          <span id="cart-total-price" class="text-xl font-black">R$ 0,00</span>
+        </div>
+      </div>
+      <div class="bg-black text-brand-yellow font-black px-4 py-2.5 rounded-xl text-sm flex items-center gap-2">
+        <span>Fechar Pedido</span>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL: MONTAR PASTEL DINÂMICO -->
+  <!-- ============================================== -->
+  <div id="custom-pastel-modal" class="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/80 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="bg-brand-card w-full max-w-md max-h-[90vh] md:rounded-3xl rounded-t-3xl border border-brand-border flex flex-col shadow-2xl overflow-hidden transform translate-y-full md:translate-y-0 transition-transform duration-300" id="custom-pastel-content">
+      
+      <div class="p-4 border-b border-brand-border flex items-center justify-between bg-brand-dark">
+        <div>
+          <h3 class="font-western text-xl text-brand-yellow">Monte seu Pastel</h3>
+          <p class="text-xs text-zinc-400">Massa: R$ 6,00 | Ingredientes: R$ 1,00/cada</p>
+        </div>
+        <button onclick="closeCustomPastelModal()" class="w-8 h-8 rounded-full bg-brand-card text-zinc-400 flex items-center justify-center font-bold">✕</button>
+      </div>
+
+      <div class="p-4 overflow-y-auto flex-1 space-y-4">
+        <h4 class="text-sm font-black text-white uppercase tracking-widest border-b border-brand-border pb-2">1. Escolha os Ingredientes</h4>
+        <div class="grid grid-cols-2 gap-2" id="ingredients-grid">
+          <!-- Ingredientes JS -->
+        </div>
+      </div>
+
+      <div class="p-4 border-t border-brand-border bg-brand-dark">
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-sm text-zinc-400 font-bold">Valor do Pastel:</span>
+          <span id="custom-pastel-price" class="text-2xl font-black text-brand-yellow">R$ 6,00</span>
+        </div>
+        <button onclick="addCustomPastelToCart()" class="w-full bg-brand-yellow hover:bg-yellow-400 text-black font-black py-3.5 rounded-xl text-sm transition-all shadow-[0_0_15px_rgba(234,179,8,0.3)] active:scale-95">
+          Adicionar à Sacola
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ============================================== -->
+  <!-- MODAL: CHECKOUT / SACOLA -->
+  <!-- ============================================== -->
+  <div id="cart-modal" class="fixed inset-0 z-50 flex items-end md:items-center justify-center bg-black/80 backdrop-blur-sm opacity-0 pointer-events-none transition-opacity duration-300">
+    <div class="bg-brand-card w-full max-w-lg max-h-[90vh] md:rounded-3xl rounded-t-3xl border border-brand-border flex flex-col shadow-2xl overflow-hidden transform translate-y-full md:translate-y-0 transition-transform duration-300" id="cart-modal-content">
+      
+      <div class="p-4 border-b border-brand-border flex items-center justify-between bg-brand-dark">
+        <h3 class="font-western text-xl text-white tracking-wide">Sua Sacola</h3>
+        <button onclick="closeCartModal()" class="w-8 h-8 rounded-full bg-brand-card text-zinc-400 hover:text-white flex items-center justify-center transition-colors">✕</button>
+      </div>
+
+      <div class="p-4 overflow-y-auto space-y-6 flex-1">
+        
+        <!-- Itens -->
+        <div>
+          <div id="cart-items-list" class="space-y-3">
+            <!-- Injetado via JS -->
+          </div>
+        </div>
+
+        <!-- Formulário de Entrega -->
+        <div class="border-t border-brand-border pt-4 space-y-4">
+          <h4 class="text-xs font-black text-brand-yellow uppercase tracking-widest mb-2">Dados do Cliente</h4>
+          
+          <div>
+            <label class="block text-xs text-zinc-400 font-bold mb-1">Nome do Peão / Patroa *</label>
+            <input type="text" id="customer-name" placeholder="Como devemos te chamar?" class="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-brand-yellow">
+          </div>
+
+          <div>
+            <label class="block text-xs text-zinc-400 font-bold mb-1">Como vai ser?</label>
+            <div class="grid grid-cols-2 gap-2">
+              <button type="button" onclick="setOrderType('entrega')" id="btn-type-entrega" class="py-2.5 px-3 rounded-xl text-xs font-black transition-all bg-brand-yellow text-black border-2 border-brand-yellow">
+                🛵 Manda entregar
+              </button>
+              <button type="button" onclick="setOrderType('retirada')" id="btn-type-retirada" class="py-2.5 px-3 rounded-xl border-2 border-brand-border bg-brand-dark text-zinc-400 text-xs font-black transition-all">
+                🏪 Vou buscar
+              </button>
+            </div>
+          </div>
+
+          <div id="address-fields" class="space-y-3 bg-brand-dark p-3 rounded-xl border border-brand-border">
+            <div>
+              <label class="block text-xs text-zinc-400 font-bold mb-1">Rua / Avenida *</label>
+              <input type="text" id="address-street" placeholder="Ex: Av. Brasil" class="w-full bg-brand-card border border-brand-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-brand-yellow">
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-xs text-zinc-400 font-bold mb-1">Número *</label>
+                <input type="text" id="address-number" placeholder="123" class="w-full bg-brand-card border border-brand-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-brand-yellow">
+              </div>
+              <div>
+                <label class="block text-xs text-zinc-400 font-bold mb-1">Bairro *</label>
+                <input type="text" id="address-neighborhood" placeholder="Centro" class="w-full bg-brand-card border border-brand-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-brand-yellow">
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs text-zinc-400 font-bold mb-1">Referência</label>
+              <input type="text" id="address-ref" placeholder="Perto de onde?" class="w-full bg-brand-card border border-brand-border rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-brand-yellow">
+            </div>
+          </div>
+
+          <h4 class="text-xs font-black text-brand-yellow uppercase tracking-widest pt-2">Pagamento</h4>
+          <div>
+            <select id="payment-method" onchange="togglePaymentFields()" class="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-3 text-sm text-white font-bold focus:outline-none focus:border-brand-yellow">
+              <option value="pix">⚡ Pix (Chave no WhatsApp)</option>
+              <option value="cartao">💳 Máquininha (Cartão)</option>
+              <option value="dinheiro">💵 Dinheiro Vivo</option>
+            </select>
+          </div>
+
+          <div id="change-field" class="hidden">
+            <label class="block text-xs text-zinc-400 font-bold mb-1">Troco para quanto?</label>
+            <input type="text" id="cash-change" placeholder="Ex: R$ 50,00 ou Não preciso" class="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-brand-yellow">
+          </div>
+
+          <div>
+            <label class="block text-xs text-zinc-400 font-bold mb-1">Alguma Observação?</label>
+            <textarea id="order-obs" rows="2" placeholder="Ex: Tirar cebola do x-salada, suco de laranja bem gelado..." class="w-full bg-brand-dark border border-brand-border rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-brand-yellow resize-none"></textarea>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="p-4 border-t border-brand-border bg-brand-dark space-y-3">
+        <div class="flex items-center justify-between text-base">
+          <span class="text-white font-black uppercase">Total a Pagar</span>
+          <span id="modal-total" class="text-2xl font-black text-brand-yellow">R$ 0,00</span>
+        </div>
+        <button onclick="sendOrderToWhatsApp()" class="w-full bg-green-500 hover:bg-green-600 text-white font-black py-4 px-4 rounded-xl text-base transition-all shadow-lg flex items-center justify-center gap-2 active:scale-95">
+          <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0a12 12 0 1 0 12 12A12.013 12.013 0 0 0 12 0zm6.9 17.5a.86.86 0 0 1-1.18.25c-3.23-1.98-7.3-2.43-10.12-1.33a.86.86 0 1 1-.56-1.63c3.26-1.25 7.85-.75 11.5 1.48a.86.86 0 0 1 .36 1.23zm1.6-3.64c-.2.32-.6.44-.95.23-3.6-2.2-9.1-2.8-12.37-1.53a1.05 1.05 0 0 1-1.35-1.4c3.8-1.5 10-1.03 14.28 1.59a1.04 1.04 0 0 1 .4 1.11z"/></svg>
+          Mandar Pedido pro ZAP
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // ==========================================
+    // DADOS DO CARDÁPIO
+    // ==========================================
+    const ingredientsData = [
+      "Tomate", "Milho", "Orégano", "Palmito", "Azeitona", "Calabresa", 
+      "Frango", "Queijo", "Catupiry", "Presunto", "Ovo", "Cheddar", "Carne", "Bacon"
+    ];
+
+    const productsData = [
+      // --- PASTÉIS ESPECIAIS ---
+      { id: 'p1', name: "Cowboy de Carne", category: "pasteis", sub: "Especiais", price: 10.00, desc: "Carne, Bacon e Cheddar", tag: "Bruto!" },
+      { id: 'p2', name: "Cowboy de Frango", category: "pasteis", sub: "Especiais", price: 10.00, desc: "Frango, Bacon e Cheddar" },
+      { id: 'p3', name: "Boiadeira de Carne", category: "pasteis", sub: "Especiais", price: 10.00, desc: "Carne, Milho, Orégano, Queijo e Catupiry", tag: "Sucesso" },
+      { id: 'p4', name: "Boiadeira de Frango", category: "pasteis", sub: "Especiais", price: 10.00, desc: "Frango, Milho, Orégano, Queijo e Catupiry" },
+      { id: 'p5', name: "Misturinha", category: "pasteis", sub: "Especiais", price: 10.00, desc: "Carne, Frango, Ovo e Queijo" },
+      { id: 'p6', name: "Pizza", category: "pasteis", sub: "Especiais", price: 10.00, desc: "Queijo, Presunto, Orégano e Tomate" },
+      
+      // --- PASTÉIS DOCES ---
+      { id: 'pd1', name: "Chocolate + Queijo", category: "pasteis", sub: "Doces", price: 8.00, desc: "Massa crocante com recheio doce" },
+      { id: 'pd2', name: "Chocolate + Banana", category: "pasteis", sub: "Doces", price: 8.00, desc: "Massa crocante com recheio doce" },
+      { id: 'pd3', name: "Banana + Canela + Leite Cond.", category: "pasteis", sub: "Doces", price: 8.00, desc: "Massa crocante com recheio doce" },
+      { id: 'pd4', name: "Chocolate", category: "pasteis", sub: "Doces", price: 8.00, desc: "Puro chocolate derretido" },
+      { id: 'pd5', name: "Romeu e Julieta", category: "pasteis", sub: "Doces", price: 8.00, desc: "Goiabada com queijo" },
+
+      // --- PASTÉIS DOCES ESPECIAIS ---
+      { id: 'pde1', name: "Sensação", category: "pasteis", sub: "Doces Especiais", price: 12.00, desc: "Chocolate com morango" },
+      { id: 'pde2', name: "Arco - Íris", category: "pasteis", sub: "Doces Especiais", price: 12.00, desc: "Especial coloridinho" },
+      { id: 'pde3', name: "Prestígio", category: "pasteis", sub: "Doces Especiais", price: 12.00, desc: "Chocolate com coco" },
+      { id: 'pde4', name: "Kinder Bueno", category: "pasteis", sub: "Doces Especiais", price: 12.00, desc: "O legítimo sabor Kinder" },
+      { id: 'pde5', name: "Confete", category: "pasteis", sub: "Doces Especiais", price: 12.00, desc: "Chocolate com MM's/Confete" },
+
+      // --- PASTÉIS KIDS ---
+      { id: 'pk1', name: "Mini Queijo", category: "pasteis", sub: "Kids", price: 5.00, desc: "Tamanho ideal para a criançada" },
+      { id: 'pk2', name: "Mini Carne", category: "pasteis", sub: "Kids", price: 5.00, desc: "Tamanho ideal para a criançada" },
+      { id: 'pk3', name: "Mini Chocolate", category: "pasteis", sub: "Kids", price: 5.00, desc: "Tamanho ideal para a criançada" },
+
+      // --- LANCHES (Não trocamos ingredientes) ---
+      { id: 'l1', name: "Misto-Quente", category: "lanches", sub: "Lanches", price: 8.00, desc: "Pão, Presunto e Mussarela" },
+      { id: 'l2', name: "Bauru", category: "lanches", sub: "Lanches", price: 9.00, desc: "Pão, Presunto, Mussarela e tomate" },
+      { id: 'l3', name: "X-Burguer", category: "lanches", sub: "Lanches", price: 16.00, desc: "Pão, Presunto, Mussarela, Hambúrguer, Milho e Batata Palha" },
+      { id: 'l4', name: "X-Vegetariano", category: "lanches", sub: "Lanches", price: 16.00, desc: "Pão, Mussarela, Milho, Catupiry, Cheddar, Tomate, Alface, Ovo e Batata Palha" },
+      { id: 'l5', name: "X-Salada", category: "lanches", sub: "Lanches", price: 18.00, desc: "Pão, Presunto, Mussarela, Hambúrguer, Alface, Tomate, Milho e Batata Palha" },
+      { id: 'l6', name: "X-Egg", category: "lanches", sub: "Lanches", price: 18.00, desc: "Pão, Presunto, Mussarela, Hambúrguer, Ovo, Milho e Batata Palha" },
+      { id: 'l7', name: "X-Bacon", category: "lanches", sub: "Lanches", price: 20.00, desc: "Pão, Presunto, Mussarela, Hambúrguer, Bacon, Milho e Batata Palha", tag: "Muito Bacon" },
+      { id: 'l8', name: "X-Calabresa", category: "lanches", sub: "Lanches", price: 20.00, desc: "Pão, Presunto, Mussarela, Hambúrguer, Calabresa, Milho e Batata Palha" },
+      { id: 'l9', name: "X-Frango", category: "lanches", sub: "Lanches", price: 20.00, desc: "Pão, Presunto, Mussarela, Hambúrguer, Frango, Catupiry, Milho e Batata Palha" },
+      { id: 'l10', name: "X-Pastelito", category: "lanches", sub: "Lanches", price: 23.00, desc: "Pão, Presunto, Queijo, Bacon, Hambúrguer, Milho, Cheddar, Catupiry, Alface, Tomate e Batata Palha", tag: "Nossa Marca" },
+      { id: 'l11', name: "X-Misturinha", category: "lanches", sub: "Lanches", price: 24.00, desc: "Pão, Presunto, Mussarela, Hambúrguer, Bacon, Frango, Calabresa, Milho e Batata Palha" },
+      { id: 'l12', name: "X-Turbo", category: "lanches", sub: "Lanches", price: 25.00, desc: "Pão, Presunto, Mussarela, Hambúrguer, Bacon, Frango, Calabresa, Ovo, Catupiry, Milho, Alface, Tomate e Batata Palha", tag: "Monstrão" },
+
+      // --- HOT DOGS (Todos contém catchup) ---
+      { id: 'h1', name: "Dog Tradicional", category: "hotdogs", sub: "Hot Dogs", price: 14.00, desc: "Pão, Molho de Tomate, Salsicha, Milho e Batata Palha" },
+      { id: 'h2', name: "Dog Mussarela", category: "hotdogs", sub: "Hot Dogs", price: 17.00, desc: "Pão, Molho de Tomate, Salsicha, Mussarela, Milho e Batata Palha" },
+      { id: 'h3', name: "Dog Calabresa", category: "hotdogs", sub: "Hot Dogs", price: 17.00, desc: "Pão, Molho de Tomate, Salsicha, Mussarela, Calabresa, Milho e Batata Palha" },
+      { id: 'h4', name: "Dog Bacon", category: "hotdogs", sub: "Hot Dogs", price: 17.00, desc: "Pão, Molho de Tomate, Salsicha, Mussarela, Bacon, Milho e Batata Palha" },
+      { id: 'h5', name: "Dog Frango", category: "hotdogs", sub: "Hot Dogs", price: 17.00, desc: "Pão, Molho de Tomate, Salsicha, Frango, Catupiry, Milho e Batata Palha" },
+
+      // --- BEBIDAS ---
+      { id: 'b1', name: "Refrigerante Lata", category: "bebidas", sub: "Refri & Cerveja", price: 5.00, desc: "Coca, Guaraná, etc (consulte sabores)" },
+      { id: 'b2', name: "Refrigerante 290 ML", category: "bebidas", sub: "Refri & Cerveja", price: 5.00, desc: "Garrafinha de vidro" },
+      { id: 'b3', name: "Coca-Cola 600 ML", category: "bebidas", sub: "Refri & Cerveja", price: 7.00, desc: "Bem gelada" },
+      { id: 'b4', name: "Coca-Cola 1L", category: "bebidas", sub: "Refri & Cerveja", price: 8.00, desc: "Garrafa 1 Litro" },
+      { id: 'b5', name: "Coca-Cola 2L", category: "bebidas", sub: "Refri & Cerveja", price: 15.00, desc: "Para a família toda" },
+      { id: 'b6', name: "Tubaína 600 ML", category: "bebidas", sub: "Refri & Cerveja", price: 5.00, desc: "Clássica" },
+      { id: 'b7', name: "Tubaína 2L", category: "bebidas", sub: "Refri & Cerveja", price: 10.00, desc: "Clássica tamanho família" },
+      { id: 'b8', name: "Caçulinha / Sodinha", category: "bebidas", sub: "Refri & Cerveja", price: 4.00, desc: "Refrigerante pequeno" },
+      { id: 'b9', name: "Água Mineral", category: "bebidas", sub: "Refri & Cerveja", price: 3.00, desc: "Sem gás / Com gás" },
+      { id: 'b10', name: "Cerveja Lata", category: "bebidas", sub: "Refri & Cerveja", price: 6.00, desc: "Consulte as marcas" },
+      { id: 'b11', name: "Cerveja Long Neck 350ml", category: "bebidas", sub: "Refri & Cerveja", price: 8.00, desc: "Consulte as marcas" },
+      
+      // --- CAFÉS ---
+      { id: 'c1', name: "Cafézinho", category: "bebidas", sub: "Cafés", price: 2.00, desc: "Aquele café preto pra acordar" },
+      { id: 'c2', name: "Café com Leite / Leite com Toddy", category: "bebidas", sub: "Cafés", price: 3.00, desc: "Bebida quente" },
+
+      // --- SUCOS ---
+      { id: 's1', name: "Suco com Água (400ml)", category: "bebidas", sub: "Sucos Naturais", price: 8.00, desc: "Sabores: Coco, Abacaxi, Laranja, Acerola, Maracujá, Morango, Abacaxi com Hortelã. (Coloque o sabor na observação)" },
+      { id: 's2', name: "Suco com Leite (400ml)", category: "bebidas", sub: "Sucos Naturais", price: 9.00, desc: "Sabores: Coco, Abacaxi, Laranja, Acerola, Maracujá, Morango, Abacaxi com Hortelã. (Coloque o sabor na observação)" }
+    ];
+
+    // ==========================================
+    // LÓGICA E ESTADO
+    // ==========================================
+    let currentCategory = 'pasteis';
+    let cart = [];
+    let orderType = 'entrega';
+    
+    // Formatação BRL
+    const formatBRL = (val) => val.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderIngredients();
+      renderCatalog();
+    });
+
+    function selectCategory(category) {
+      currentCategory = category;
+      document.querySelectorAll('.category-btn').forEach(btn => {
+        btn.classList.remove('bg-brand-yellow', 'border-brand-yellow', 'text-black', 'shadow-[0_0_10px_rgba(234,179,8,0.3)]');
+        btn.classList.add('border-brand-border', 'bg-brand-card', 'text-zinc-300');
+      });
+      const activeBtn = document.getElementById(`tab-${category}`);
+      if (activeBtn) {
+        activeBtn.classList.remove('border-brand-border', 'bg-brand-card', 'text-zinc-300');
+        activeBtn.classList.add('bg-brand-yellow', 'border-brand-yellow', 'text-black', 'shadow-[0_0_10px_rgba(234,179,8,0.3)]');
+      }
+      renderCatalog();
+    }
+
+    function filterProducts() {
+      renderCatalog();
+    }
+
+    function renderCatalog() {
+      const container = document.getElementById('catalog-container');
+      const searchTerms = document.getElementById('search-input').value.toLowerCase().trim();
+      container.innerHTML = '';
+
+      // Agrupamento por subcategoria
+      let itemsToRender = productsData.filter(p => p.category === currentCategory);
+
+      if (searchTerms) {
+        // Se estiver buscando, procura em tudo ignorando a aba atual
+        itemsToRender = productsData.filter(p => 
+          p.name.toLowerCase().includes(searchTerms) || 
+          p.desc.toLowerCase().includes(searchTerms)
+        );
+      }
+
+      // Se for a aba de Pastéis e não tiver busca rolando, renderiza o Banner "Monte seu Pastel"
+      if (currentCategory === 'pasteis' && !searchTerms) {
+        container.insertAdjacentHTML('beforeend', `
+          <div onclick="openCustomPastelModal()" class="bg-gradient-to-r from-brand-yellow to-yellow-600 rounded-2xl p-5 cursor-pointer transform hover:scale-[1.02] transition-transform shadow-[0_10px_20px_rgba(234,179,8,0.2)] border border-yellow-400">
+            <div class="flex items-center justify-between">
+              <div>
+                <span class="bg-black text-brand-yellow text-[10px] font-black uppercase px-2 py-0.5 rounded shadow mb-2 inline-block">Novidade</span>
+                <h3 class="font-western text-2xl text-black leading-none mb-1">Monte seu Pastel</h3>
+                <p class="text-black/80 text-sm font-bold">Massa R$ 6,00 + Ingredientes R$ 1,00. Clique para montar o seu!</p>
+              </div>
+              <div class="text-4xl">🥟</div>
+            </div>
+          </div>
+        `);
+      }
+
+      const subs = [...new Set(itemsToRender.map(item => item.sub))];
+
+      subs.forEach(sub => {
+        const subItems = itemsToRender.filter(i => i.sub === sub);
+        if (subItems.length > 0) {
+          const sectionHtml = `
+            <section class="space-y-4">
+              <div class="flex items-center gap-3">
+                <h3 class="font-western text-xl text-brand-yellow uppercase tracking-widest">${sub}</h3>
+                <div class="h-px flex-1 bg-gradient-to-r from-brand-yellow/50 to-transparent"></div>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                ${subItems.map(item => renderCard(item)).join('')}
+              </div>
+            </section>
+          `;
+          container.insertAdjacentHTML('beforeend', sectionHtml);
+        }
+      });
+
+      if (itemsToRender.length === 0 && searchTerms) {
+        container.innerHTML = `<div class="text-center py-10 text-zinc-500 font-bold">Nenhum item encontrado 🤠</div>`;
+      }
+    }
+
+    function renderCard(product) {
+      // Find quantity in cart
+      const cartItems = cart.filter(i => i.id === product.id);
+      const qty = cartItems.reduce((acc, item) => acc + item.quantity, 0);
+
+      return `
+        <div class="bg-brand-card border border-brand-border rounded-2xl p-4 flex flex-col justify-between hover:border-brand-yellow/50 transition-colors relative overflow-hidden group">
+          ${product.tag ? `<span class="absolute top-0 right-0 bg-brand-red text-white text-[10px] font-black px-3 py-1 rounded-bl-xl uppercase">${product.tag}</span>` : ''}
+          
+          <div class="mb-3 pr-12">
+            <h4 class="font-bold text-white text-base leading-tight">${product.name}</h4>
+            <p class="text-zinc-400 text-xs mt-1 leading-relaxed">${product.desc}</p>
+          </div>
+
+          <div class="flex items-center justify-between border-t border-brand-border pt-3 mt-auto">
+            <span class="text-lg font-black text-brand-yellow">${formatBRL(product.price)}</span>
+            
+            ${qty > 0 ? `
+              <div class="flex items-center bg-brand-dark border border-brand-yellow/30 rounded-xl p-1 gap-2">
+                <button onclick="updateCart('${product.id}', -1)" class="w-7 h-7 rounded-lg bg-brand-card hover:bg-brand-red text-white font-black flex items-center justify-center transition-colors">-</button>
+                <span class="font-black text-sm text-white px-1">${qty}</span>
+                <button onclick="updateCart('${product.id}', 1)" class="w-7 h-7 rounded-lg bg-brand-yellow hover:bg-yellow-400 text-black font-black flex items-center justify-center transition-colors">+</button>
+              </div>
+            ` : `
+              <button onclick="addToCart('${product.id}')" class="bg-brand-dark border border-brand-yellow text-brand-yellow hover:bg-brand-yellow hover:text-black text-xs font-black px-4 py-2 rounded-xl transition-all shadow-md active:scale-95">
+                + Add
+              </button>
+            `}
+          </div>
+        </div>
+      `;
+    }
+
+    // ==========================================
+    // SISTEMA DE MONTAR PASTEL
+    // ==========================================
+    function renderIngredients() {
+      const grid = document.getElementById('ingredients-grid');
+      let html = '';
+      ingredientsData.forEach((ing, index) => {
+        html += `
+          <label class="cursor-pointer relative">
+            <input type="checkbox" value="${ing}" class="sr-only ing-checkbox" onchange="calculateCustomPastel()">
+            <div class="bg-brand-dark border border-brand-border text-zinc-300 rounded-xl p-3 text-sm font-semibold transition-all hover:border-zinc-600 flex justify-between items-center select-none">
+              <span>${ing}</span>
+              <span class="text-[10px] opacity-70 border border-current px-1.5 py-0.5 rounded">+ R$ 1</span>
+            </div>
+          </label>
+        `;
+      });
+      grid.innerHTML = html;
+    }
+
+    function calculateCustomPastel() {
+      const checkboxes = document.querySelectorAll('.ing-checkbox:checked');
+      const total = 6.00 + (checkboxes.length * 1.00); // R$ 6 base + R$ 1 por item
+      document.getElementById('custom-pastel-price').innerText = formatBRL(total);
+      return { total, count: checkboxes.length };
+    }
+
+    function openCustomPastelModal() {
+      // Limpa os checkboxes
+      document.querySelectorAll('.ing-checkbox').forEach(cb => cb.checked = false);
+      calculateCustomPastel();
+
+      const modal = document.getElementById('custom-pastel-modal');
+      const content = document.getElementById('custom-pastel-content');
+      modal.classList.remove('pointer-events-none', 'opacity-0');
+      modal.classList.add('opacity-100');
+      content.classList.remove('translate-y-full');
+      content.classList.add('translate-y-0');
+    }
+
+    function closeCustomPastelModal() {
+      const modal = document.getElementById('custom-pastel-modal');
+      const content = document.getElementById('custom-pastel-content');
+      content.classList.remove('translate-y-0');
+      content.classList.add('translate-y-full');
+      setTimeout(() => {
+        modal.classList.remove('opacity-100');
+        modal.classList.add('pointer-events-none', 'opacity-0');
+      }, 300);
+    }
+
+    function addCustomPastelToCart() {
+      const checkboxes = document.querySelectorAll('.ing-checkbox:checked');
+      if (checkboxes.length === 0) {
+        alert("Escolha pelo menos 1 ingrediente para o seu pastel, peão!");
+        return;
+      }
+
+      const selected = Array.from(checkboxes).map(cb => cb.value).join(', ');
+      const priceData = calculateCustomPastel();
+      
+      const customItem = {
+        id: 'custom_' + Date.now(),
+        name: "Pastel Montado",
+        desc: selected,
+        price: priceData.total,
+        quantity: 1,
+        isCustom: true
+      };
+
+      cart.push(customItem);
+      showToast("Pastel Montado adicionado!");
+      closeCustomPastelModal();
+      updateCartUI();
+    }
+
+    // ==========================================
+    // LÓGICA DO CARRINHO
+    // ==========================================
+    function addToCart(productId) {
+      const product = productsData.find(p => p.id === productId);
+      if (!product) return;
+
+      const existing = cart.find(item => item.id === productId && !item.isCustom);
+      if (existing) {
+        existing.quantity += 1;
+      } else {
+        cart.push({ ...product, quantity: 1, isCustom: false });
+      }
+
+      showToast(`Adicionado na sacola!`);
+      updateCartUI();
+      renderCatalog();
+    }
+
+    function updateCart(id, delta) {
+      const index = cart.findIndex(item => item.id === id);
+      if (index !== -1) {
+        cart[index].quantity += delta;
+        if (cart[index].quantity <= 0) {
+          cart.splice(index, 1);
+        }
+      }
+      updateCartUI();
+      renderCatalog();
+      if (document.getElementById('cart-modal').classList.contains('opacity-100')) {
+        renderCartItems();
+      }
+    }
+
+    function updateCartUI() {
+      const totalQty = cart.reduce((acc, item) => acc + item.quantity, 0);
+      const totalPrice = cart.reduce((acc, item) => acc + (item.price * item.quantity), 0);
+
+      const bar = document.getElementById('cart-floating-bar');
+      document.getElementById('cart-count-badge').innerText = totalQty;
+      document.getElementById('cart-total-price').innerText = formatBRL(totalPrice);
+      document.getElementById('modal-total').innerText = formatBRL(totalPrice);
+
+      if (totalQty > 0) {
+        bar.classList.remove('translate-y-32', 'opacity-0');
+        bar.classList.add('translate-y-0', 'opacity-100');
+      } else {
+        bar.classList.remove('translate-y-0', 'opacity-100');
+        bar.classList.add('translate-y-32', 'opacity-0');
+        closeCartModal(); // fecha se esvaziar
+      }
+    }
+
+    // MODAL DE CHECKOUT
+    function openCartModal() {
+      if (cart.length === 0) return;
+      renderCartItems();
+      const modal = document.getElementById('cart-modal');
+      const content = document.getElementById('cart-modal-content');
+      modal.classList.remove('pointer-events-none', 'opacity-0');
+      modal.classList.add('opacity-100');
+      content.classList.remove('translate-y-full');
+      content.classList.add('translate-y-0');
+    }
+
+    function closeCartModal() {
+      const modal = document.getElementById('cart-modal');
+      const content = document.getElementById('cart-modal-content');
+      content.classList.remove('translate-y-0');
+      content.classList.add('translate-y-full');
+      setTimeout(() => {
+        modal.classList.remove('opacity-100');
+        modal.classList.add('pointer-events-none', 'opacity-0');
+      }, 300);
+    }
+
+    function renderCartItems() {
+      const list = document.getElementById('cart-items-list');
+      list.innerHTML = '';
+      
+      cart.forEach(item => {
+        list.insertAdjacentHTML('beforeend', `
+          <div class="flex items-center justify-between bg-brand-dark p-3 rounded-xl border border-brand-border">
+            <div class="flex-1 pr-3">
+              <h5 class="text-sm font-bold text-white leading-tight">${item.name}</h5>
+              ${item.isCustom ? `<p class="text-[10px] text-zinc-400 mt-0.5 leading-tight">${item.desc}</p>` : ''}
+              <span class="text-xs text-brand-yellow font-black block mt-1">${formatBRL(item.price * item.quantity)}</span>
+            </div>
+            <div class="flex items-center gap-2 bg-brand-card rounded-lg p-1 border border-brand-border">
+              <button onclick="updateCart('${item.id}', -1)" class="w-7 h-7 rounded bg-brand-dark hover:bg-brand-red text-white font-black flex items-center justify-center">-</button>
+              <span class="text-xs font-black text-white px-1 w-4 text-center">${item.quantity}</span>
+              <button onclick="updateCart('${item.id}', 1)" class="w-7 h-7 rounded bg-brand-yellow hover:bg-yellow-400 text-black font-black flex items-center justify-center">+</button>
+            </div>
+          </div>
+        `);
+      });
+    }
+
+    function setOrderType(type) {
+      orderType = type;
+      const btnE = document.getElementById('btn-type-entrega');
+      const btnR = document.getElementById('btn-type-retirada');
+      const fields = document.getElementById('address-fields');
+
+      if (type === 'entrega') {
+        btnE.className = 'py-2.5 px-3 rounded-xl text-xs font-black transition-all bg-brand-yellow text-black border-2 border-brand-yellow';
+        btnR.className = 'py-2.5 px-3 rounded-xl border-2 border-brand-border bg-brand-dark text-zinc-400 text-xs font-black transition-all';
+        fields.classList.remove('hidden');
+      } else {
+        btnR.className = 'py-2.5 px-3 rounded-xl text-xs font-black transition-all bg-brand-yellow text-black border-2 border-brand-yellow';
+        btnE.className = 'py-2.5 px-3 rounded-xl border-2 border-brand-border bg-brand-dark text-zinc-400 text-xs font-black transition-all';
+        fields.classList.add('hidden');
+      }
+    }
+
+    function togglePaymentFields() {
+      const method = document.getElementById('payment-method').value;
+      const changeField = document.getElementById('change-field');
+      if (method === 'dinheiro') changeField.classList.remove('hidden');
+      else changeField.classList.add('hidden');
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      document.getElementById('toast-message').innerText = msg;
+      toast.classList.remove('translate-y-[-150%]', 'opacity-0');
+      toast.classList.add('translate-y-0', 'opacity-100');
+      setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('translate-y-[-150%]', 'opacity-0');
+      }, 2000);
+    }
+
+    // ==========================================
+    // ENVIO PARA WHATSAPP (SISTEMA SEGURO / SEM ERROS)
+    // ==========================================
+    function sendOrderToWhatsApp() {
+      const name = document.getElementById('customer-name').value.trim();
+      if (!name) { alert('Ei, coloca seu nome aí pra gente saber quem é!'); return; }
+      
+      let lines = [];
+      lines.push("*PEDIDO | FAMÍLIA PASTELLITO*");
+      lines.push("================================");
+      lines.push(`*Cliente:* ${name}`);
+      
+      if (orderType === 'entrega') {
+        const street = document.getElementById('address-street').value.trim();
+        const num = document.getElementById('address-number').value.trim();
+        const neigh = document.getElementById('address-neighborhood').value.trim();
+        const ref = document.getElementById('address-ref').value.trim();
+        
+        if (!street || !num || !neigh) {
+          alert('Preenche o endereço direito pra gente não se perder, chefe!');
+          return;
+        }
+        
+        lines.push("*Tipo:* Entrega");
+        lines.push("*Endereço:*");
+        lines.push(`${street}, Nº ${num}`);
+        lines.push(`${neigh}`);
+        if (ref) lines.push(`(Ref: ${ref})`);
+      } else {
+        lines.push("*Tipo:* Vou buscar no balcão");
+      }
+      
+      lines.push("--------------------------------");
+      lines.push("*RESUMO DO PEDIDO:*");
+      lines.push("");
+
+      let totalPrice = 0;
+      cart.forEach(item => {
+        const itemTotal = item.price * item.quantity;
+        totalPrice += itemTotal;
+        if (item.isCustom) {
+          lines.push(`- ${item.quantity}x ${item.name} (${item.desc})`);
+        } else {
+          lines.push(`- ${item.quantity}x ${item.name}`);
+        }
+        lines.push(`  ${formatBRL(itemTotal)}`);
+        lines.push(""); // linha em branco para espaçamento
+      });
+
+      lines.push("--------------------------------");
+      lines.push(`*TOTAL A PAGAR:* ${formatBRL(totalPrice)}`);
+      
+      const pm = document.getElementById('payment-method').value;
+      if (pm === 'pix') lines.push("*Forma de Pagamento:* Pix");
+      else if (pm === 'cartao') lines.push("*Forma de Pagamento:* Cartão (Maquininha)");
+      else {
+        const troco = document.getElementById('cash-change').value.trim();
+        lines.push("*Forma de Pagamento:* Dinheiro");
+        if (troco) lines.push(`*Troco para:* ${troco}`);
+      }
+
+      const obs = document.getElementById('order-obs').value.trim();
+      if (obs) {
+        lines.push("");
+        lines.push("*Observações do Cliente:*");
+        lines.push(`_${obs}_`);
+      }
+
+      lines.push("================================");
+      lines.push("_Pedido gerado via Cardápio Digital_");
+
+      // Monta a string final com \n
+      const finalMessage = lines.join("\n");
+      
+      // Codifica e envia
+      const encodedMessage = encodeURIComponent(finalMessage);
+      const phone = "5516989056023"; // Mesmo número usado antes, altere se o da pastelaria for outro
+      const whatsappUrl = `https://api.whatsapp.com/send?phone=${phone}&text=${encodedMessage}`;
+      
+      window.open(whatsappUrl, '_blank');
+    }
+  </script>
+</body>
+</html>
